@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordleburu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            text-transform: uppercase;
+            text-align: center;
+            border: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+        }
+        .correct { background-color: green; color: white; }
+        .present { background-color: yellow; color: black; }
+        .absent { background-color: grey; color: white; }
+        #button-container { display: flex; justify-content: center; margin-top: 20px; }
+        input { position: absolute; top: -100px; }
+        @media (max-width: 600px) {
+            .cell { width: 40px; height: 40px; font-size: 20px; }
+            .grid { gap: 3px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Wordleburu</h1>
+    <div id="game"></div>
+    <input type="text" id="guess" maxlength="7" oninput="updateGrid()" autofocus>
+    <div id="button-container">
+        <button onclick="checkWord()">Adivinar</button>
+    </div>
+    <p id="message"></p>
+
+    <script>
+        const WORD = "MALDINI";
+        const MAX_TRIES = 6;
+        let attempts = 0;
+        const game = document.getElementById("game");
+        const inputField = document.getElementById("guess");
+
+        function createGrid() {
+            for (let i = 0; i < MAX_TRIES; i++) {
+                let row = document.createElement("div");
+                row.classList.add("grid");
+                row.onclick = () => inputField.focus();
+                for (let j = 0; j < WORD.length; j++) {
+                    let cell = document.createElement("div");
+                    cell.classList.add("cell");
+                    row.appendChild(cell);
+                }
+                game.appendChild(row);
+            }
+        }
+
+        function updateGrid() {
+            let guess = inputField.value.toUpperCase();
+            let row = document.getElementsByClassName("grid")[attempts];
+            for (let i = 0; i < WORD.length; i++) {
+                row.children[i].innerText = guess[i] || "";
+            }
+        }
+
+        async function checkWord() {
+            let guess = inputField.value.toUpperCase();
+            if (guess.length !== 7) {
+                document.getElementById("message").innerText = "Debe tener 7 letras";
+                return;
+            }
+            let row = document.getElementsByClassName("grid")[attempts];
+            for (let i = 0; i < WORD.length; i++) {
+                let cell = row.children[i];
+                cell.innerText = guess[i];
+                await new Promise(resolve => setTimeout(resolve, 500));
+                if (guess[i] === WORD[i]) {
+                    cell.classList.add("correct");
+                } else if (WORD.includes(guess[i])) {
+                    cell.classList.add("present");
+                } else {
+                    cell.classList.add("absent");
+                }
+            }
+            attempts++;
+            inputField.value = "";
+            if (guess === WORD) {
+                document.getElementById("message").innerText = "BIEN SEIBORNEITOR";
+                inputField.disabled = true;
+            } else if (attempts >= MAX_TRIES) {
+                document.getElementById("message").innerText = "Perdiste. La palabra era MALDINI";
+                inputField.disabled = true;
+            }
+        }
+
+        createGrid();
+    </script>
+</body>
+</html>
